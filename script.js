@@ -1,87 +1,153 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const cells = document.querySelectorAll('.cell');
-    const statusDisplay = document.querySelector('.status');
-    const restartButton = document.querySelector('.restart-btn');
-    
-    let gameState = ['', '', '', '', '', '', '', '', ''];
-    let currentPlayer = 'X';
-    let gameActive = true;
-    
-    const winningConditions = [
-        [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
-        [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
-        [0, 4, 8], [2, 4, 6]             // diagonals
-    ];
-    
-    function handleCellClick(e) {
-        const clickedCell = e.target;
-        const clickedCellIndex = parseInt(clickedCell.getAttribute('data-index'));
-        
-        if (gameState[clickedCellIndex] !== '' || !gameActive) {
-            return;
-        }
-        
-        gameState[clickedCellIndex] = currentPlayer;
-        clickedCell.textContent = currentPlayer;
-        clickedCell.classList.add(currentPlayer.toLowerCase());
-        
-        checkResult();
-    }
-    
-    function checkResult() {
-        let roundWon = false;
-        
-        for (let i = 0; i < winningConditions.length; i++) {
-            const [a, b, c] = winningConditions[i];
-            
-            if (gameState[a] === '' || gameState[b] === '' || gameState[c] === '') {
-                continue;
-            }
-            
-            if (gameState[a] === gameState[b] && gameState[a] === gameState[c]) {
-                roundWon = true;
-                highlightWinningCells([a, b, c]);
-                break;
-            }
-        }
-        
-        if (roundWon) {
-            statusDisplay.textContent = `Player ${currentPlayer} wins!`;
-            gameActive = false;
-            return;
-        }
-        
-        if (!gameState.includes('')) {
-            statusDisplay.textContent = "Game ended in a draw!";
-            gameActive = false;
-            return;
-        }
-        
-        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
-        statusDisplay.textContent = `Player ${currentPlayer}'s turn`;
-    }
-    
-    function highlightWinningCells(cellsToHighlight) {
-        cellsToHighlight.forEach(index => {
-            cells[index].classList.add('winning-cell');
-        });
-    }
-    
-    function restartGame() {
-        gameState = ['', '', '', '', '', '', '', '', ''];
-        currentPlayer = 'X';
-        gameActive = true;
-        statusDisplay.textContent = `Player ${currentPlayer}'s turn`;
-        
-        cells.forEach(cell => {
-            cell.textContent = '';
-            cell.classList.remove('x', 'o', 'winning-cell');
-        });
-    }
-    
-    cells.forEach(cell => {
-        cell.addEventListener('click', handleCellClick);
+  const boxes = document.querySelectorAll('.box');
+  const turnIndicator = document.querySelector('.turn-indicator');
+  const playerXScore = document.getElementById('playerX');
+  const playerOScore = document.getElementById('playerO');
+  const restartBtn = document.getElementById('restartbtn');
+  const newGameBtn = document.getElementById('newGameBtn');
+  const modal = document.querySelector('.modal');
+  const modalMessage = document.querySelector('.modal .message');
+  const modalRestartBtn = document.getElementById('modalRestartBtn');
+
+  const X_TEXT = 'X';
+  const O_TEXT = 'O';
+  
+  let currentPlayer = X_TEXT;
+  let gameBoard = Array(9).fill(null);
+  let gameActive = true;
+  let scores = { X: 0, O: 0 };
+
+  const winningCombinations = [
+    [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
+    [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
+    [0, 4, 8], [2, 4, 6]             // diagonals
+  ];
+
+  // Initialize the game
+  function initGame() {
+    boxes.forEach(box => {
+      box.textContent = '';
+      box.classList.remove('winning-box');
+      box.style.pointerEvents = 'auto';
     });
     
-    restartButton.addEventListener('click', restartGame);
+    gameBoard = Array(9).fill(null);
+    gameActive = true;
+    currentPlayer = X_TEXT;
+    updateTurnIndicator();
+  }
+
+  // Handle box clicks
+  function handleBoxClick(e) {
+    const box = e.target;
+    const boxId = parseInt(box.id);
+    
+    if (!gameActive || gameBoard[boxId] !== null) return;
+    
+    gameBoard[boxId] = currentPlayer;
+    box.textContent = currentPlayer;
+    
+    if (checkWin()) {
+      handleWin();
+      return;
+    }
+    
+    if (checkDraw()) {
+      handleDraw();
+      return;
+    }
+    
+    switchPlayer();
+    updateTurnIndicator();
+  }
+
+  // Check for win
+  function checkWin() {
+    return winningCombinations.some(combination => {
+      const [a, b, c] = combination;
+      return gameBoard[a] && 
+             gameBoard[a] === gameBoard[b] && 
+             gameBoard[a] === gameBoard[c];
+    });
+  }
+
+  // Handle win
+  function handleWin() {
+    gameActive = false;
+    scores[currentPlayer]++;
+    updateScores();
+    
+    // Highlight winning boxes
+    const winningCombo = winningCombinations.find(combination => {
+      const [a, b, c] = combination;
+      return gameBoard[a] && 
+             gameBoard[a] === gameBoard[b] && 
+             gameBoard[a] === gameBoard[c];
+    });
+    
+    winningCombo.forEach(index => {
+      boxes[index].classList.add('winning-box');
+    });
+    
+    showModal(`Player ${currentPlayer} wins!`);
+  }
+
+  // Check for draw
+  function checkDraw() {
+    return !gameBoard.includes(null) && !checkWin();
+  }
+
+  // Handle draw
+  function handleDraw() {
+    gameActive = false;
+    showModal("It's a draw!");
+  }
+
+  // Switch player
+  function switchPlayer() {
+    currentPlayer = currentPlayer === X_TEXT ? O_TEXT : X_TEXT;
+  }
+
+  // Update turn indicator
+  function updateTurnIndicator() {
+    turnIndicator.textContent = `Player ${currentPlayer}'s turn`;
+  }
+
+  // Update scores
+  function updateScores() {
+    playerXScore.textContent = `Player X: ${scores.X}`;
+    playerOScore.textContent = `Player O: ${scores.O}`;
+  }
+
+  // Show modal
+  function showModal(message) {
+    modalMessage.textContent = message;
+    modal.classList.add('active');
+  }
+
+  // Hide modal
+  function hideModal() {
+    modal.classList.remove('active');
+  }
+
+  // Event listeners
+  boxes.forEach(box => {
+    box.addEventListener('click', handleBoxClick);
+  });
+
+  restartBtn.addEventListener('click', initGame);
+
+  newGameBtn.addEventListener('click', () => {
+    scores = { X: 0, O: 0 };
+    updateScores();
+    initGame();
+  });
+
+  modalRestartBtn.addEventListener('click', () => {
+    hideModal();
+    initGame();
+  });
+
+  // Initialize the game
+  initGame();
 });

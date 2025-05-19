@@ -1,75 +1,222 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Ruda:wght@400;600;700&display=swap");
+
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --orangeColor: #f2c14e;
+  --darkColor: #2d414b;
+  --winning-blocks: #2d414b;
+}
+
 body {
-    font-family: Arial, sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-    background-color: #f0f0f0;
+  background: radial-gradient(
+    circle,
+    rgba(61, 99, 218, 1) 0%,
+    rgba(214, 84, 207, 1) 55%,
+    rgba(151, 156, 203, 1) 100%
+  );
+  font-family: "Poppins", sans-serif;
+  overflow-x: hidden;
+  min-height: 100vh;
 }
 
 .container {
-    text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 2rem;
+  min-height: 100vh;
 }
 
-h1 {
-    color: #333;
+.container h1 {
+  font-size: 3.5rem;
+  color: #fff;
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.status {
-    margin: 20px 0;
-    font-size: 1.5rem;
-    font-weight: bold;
+.scoreboard {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 500px;
+  margin-bottom: 1rem;
 }
 
-.game-board {
-    display: grid;
-    grid-template-columns: repeat(3, 100px);
-    grid-template-rows: repeat(3, 100px);
-    gap: 5px;
-    margin: 20px auto;
+.score {
+  background-color: rgba(255, 255, 255, 0.2);
+  padding: 0.5rem 1.5rem;
+  border-radius: 5px;
+  color: white;
+  font-weight: 600;
 }
 
-.cell {
-    width: 100px;
-    height: 100px;
-    background-color: white;
-    border: 2px solid #333;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 3rem;
-    cursor: pointer;
-    transition: background-color 0.3s;
+.turn-indicator {
+  font-size: 1.5rem;
+  color: white;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-.cell:hover {
-    background-color: #e0e0e0;
+#gameboard {
+  width: 100%;
+  max-width: 650px;
+  padding: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
 }
 
-.cell.x {
-    color: #f00;
+.box {
+  height: 130px;
+  width: 130px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--darkColor);
+  background-color: var(--orangeColor);
+  font-weight: 600;
+  font-size: 5.5rem;
+  margin: 0.5rem;
+  box-shadow: 2px 5px 5px rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-.cell.o {
-    color: #00f;
+.box:hover {
+  transform: translateY(-5px);
+  box-shadow: 2px 8px 8px rgba(0, 0, 0, 0.3);
 }
 
-.restart-btn {
-    padding: 10px 20px;
-    font-size: 1rem;
-    background-color: #333;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
+.controls {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
 }
 
-.restart-btn:hover {
-    background-color: #555;
+button {
+  outline: none;
+  border: none;
+  padding: 0.8rem 2rem;
+  border-radius: 5px;
+  font-family: inherit;
+  font-size: 1.2rem;
+  cursor: pointer;
+  background-color: var(--orangeColor);
+  color: var(--darkColor);
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 2px 3px 5px rgba(0, 0, 0, 0.2);
 }
 
-.winning-cell {
-    background-color: #aaffaa;
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 2px 5px 8px rgba(0, 0, 0, 0.3);
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.5s ease;
+  z-index: 100;
+}
+
+.modal.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.modal .content {
+  background-color: white;
+  padding: 2rem 3rem;
+  border-radius: 10px;
+  text-align: center;
+  max-width: 500px;
+  width: 90%;
+}
+
+.modal .content h2 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  color: var(--darkColor);
+}
+
+.winning-box {
+  background-color: var(--winning-blocks) !important;
+  color: white !important;
+}
+
+@media (max-width: 768px) {
+  .box {
+    height: 80px;
+    width: 80px;
+    font-size: 3.5rem;
+  }
+  
+  .container h1 {
+    font-size: 2.5rem;
+  }
+  
+  #gameboard {
+    padding: 1rem;
+  }
+}
+
+#gameboard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.row {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+.box {
+  height: 130px;
+  width: 130px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--darkColor);
+  background-color: var(--orangeColor);
+  font-weight: 600;
+  font-size: 5.5rem;
+  box-shadow: 2px 5px 5px rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+@media (max-width: 768px) {
+  .box {
+    height: 80px;
+    width: 80px;
+    font-size: 3.5rem;
+  }
 }

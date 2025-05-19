@@ -1,82 +1,87 @@
-const ContainerEl = document.querySelector(".container");
-let playerTxt = document.querySelector(".message");
-let restartBtn = document.getElementById("restartbtn");
-let boxes = document.querySelectorAll(".box");
-
-const O_TXT = "O";
-const X_TXT = "X";
-
-let currentPlayer = O_TXT;
-let spaces = Array(9).fill(null);
-
-let winnnerIdicator = getComputedStyle(document.body).getPropertyValue("--darkColor",);
-
-// start Game
-const startGame = () => {
-  boxes.forEach((boxs) => boxs.addEventListener("click", boxClicked));
-};
-
-// box cliekd
-function boxClicked(e) {
-  const id = e.target.id;
-
-  // check id
-  if (!spaces[id]) {
-    spaces[id] = currentPlayer;
-    e.target.innerText = currentPlayer;
-
-    // winner logic
-    if (playerHasWon() != false) {
-      playerTxt.innerHTML = ` <h2 class="message">Congtratulation Player ${currentPlayer}</h2>`;
-      winnnerIdicator = playerHasWon();
-
-      winnnerIdicator.map((box) => (boxes[box].style.backgroundColor = "#f4d03f"),);
-
-      ContainerEl.classList.add("success");
+document.addEventListener('DOMContentLoaded', () => {
+    const cells = document.querySelectorAll('.cell');
+    const statusDisplay = document.querySelector('.status');
+    const restartButton = document.querySelector('.restart-btn');
+    
+    let gameState = ['', '', '', '', '', '', '', '', ''];
+    let currentPlayer = 'X';
+    let gameActive = true;
+    
+    const winningConditions = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
+        [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
+        [0, 4, 8], [2, 4, 6]             // diagonals
+    ];
+    
+    function handleCellClick(e) {
+        const clickedCell = e.target;
+        const clickedCellIndex = parseInt(clickedCell.getAttribute('data-index'));
+        
+        if (gameState[clickedCellIndex] !== '' || !gameActive) {
+            return;
+        }
+        
+        gameState[clickedCellIndex] = currentPlayer;
+        clickedCell.textContent = currentPlayer;
+        clickedCell.classList.add(currentPlayer.toLowerCase());
+        
+        checkResult();
     }
-    currentPlayer = currentPlayer == X_TXT ? O_TXT : X_TXT;
-  }
-}
-
-// wining combination
-const winingCombination = [
-  [0, 1, 2],
-  [3, 4, 5],
-  [6, 7, 8],
-  [0, 3, 6],
-  [1, 4, 7],
-  [2, 5, 8],
-  [0, 4, 8],
-  [2, 4, 6],
-];
-
-//player win
-function playerHasWon() {
-  for (const condition of winingCombination) {
-    let [a, b, c] = condition;
-
-    if (spaces[a] && spaces[a] == spaces[b] && spaces[a] == spaces[c]) {
-      return [a, b, c];
+    
+    function checkResult() {
+        let roundWon = false;
+        
+        for (let i = 0; i < winningConditions.length; i++) {
+            const [a, b, c] = winningConditions[i];
+            
+            if (gameState[a] === '' || gameState[b] === '' || gameState[c] === '') {
+                continue;
+            }
+            
+            if (gameState[a] === gameState[b] && gameState[a] === gameState[c]) {
+                roundWon = true;
+                highlightWinningCells([a, b, c]);
+                break;
+            }
+        }
+        
+        if (roundWon) {
+            statusDisplay.textContent = `Player ${currentPlayer} wins!`;
+            gameActive = false;
+            return;
+        }
+        
+        if (!gameState.includes('')) {
+            statusDisplay.textContent = "Game ended in a draw!";
+            gameActive = false;
+            return;
+        }
+        
+        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+        statusDisplay.textContent = `Player ${currentPlayer}'s turn`;
     }
-  }
-  return false;
-}
-
-// reset the game
-restartBtn.addEventListener("click", restartGame);
-
-function restartGame() {
-  spaces.fill(null);
-
-  boxes.forEach((box) => {
-    box.innerHTML = "";
-    box.style.backgroundColor = "";
-  });
-
-  playerTxt.innerHTML = "Tic Tac Toe";
-  currentPlayer = O_TXT;
-  ContainerEl.classList.remove("success");
-}
-
-startGame();
-
+    
+    function highlightWinningCells(cellsToHighlight) {
+        cellsToHighlight.forEach(index => {
+            cells[index].classList.add('winning-cell');
+        });
+    }
+    
+    function restartGame() {
+        gameState = ['', '', '', '', '', '', '', '', ''];
+        currentPlayer = 'X';
+        gameActive = true;
+        statusDisplay.textContent = `Player ${currentPlayer}'s turn`;
+        
+        cells.forEach(cell => {
+            cell.textContent = '';
+            cell.classList.remove('x', 'o', 'winning-cell');
+        });
+    }
+    
+    cells.forEach(cell => {
+        cell.addEventListener('click', handleCellClick);
+    });
+    
+    restartButton.addEventListener('click', restartGame);
+});

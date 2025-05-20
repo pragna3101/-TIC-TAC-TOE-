@@ -1,1 +1,1 @@
-<h1><i><b>♦TIC-TAC-TOE♦</b></i></h1>
+<h1><i><b><sup>@</sup>♦TIC-TAC-TOE♦<sup>@</sup></b></i></h1>
